@@ -1,54 +1,47 @@
-// Google Apps Script for Hi5 Attendance App
-// Instructions: Paste this into Extensions > Apps Script in your Google Sheet
+/**
+ * Updated Google Apps Script for Hi5 Attendance
+ * Organizes data by Coach, Centre, and Student with Date/Day/Time details.
+ */
 
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const timestamp = new Date();
+    const currentTime = timestamp.toLocaleTimeString();
+
+    // 1. Log to Centre-specific Sheet
+    const sheetName = data.centre || "General_Attendance";
+    let sheet = ss.getSheetByName(sheetName);
     
-    // 1. Log Attendance by Centre
-    const centreSheetName = data.centre || "General_Attendance";
-    let centreSheet = ss.getSheetByName(centreSheetName);
-    
-    if (!centreSheet) {
-      centreSheet = ss.insertSheet(centreSheetName);
-      centreSheet.appendRow(["Date", "Day", "School", "Student Name", "Status", "Coach", "Timestamp"]);
-      centreSheet.getRange(1, 1, 1, 7).setFontWeight("bold").setBackground("#f3f3f3");
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+      // Header row
+      sheet.appendRow(["Coach Name", "Centre Name", "Date", "Day", "Session Time", "Hours Worked", "Student Name", "Attendance Status", "Log Timestamp"]);
+      sheet.getRange(1, 1, 1, 9).setFontWeight("bold").setBackground("#d9ead3").setBorder(true, true, true, true, true, true);
+      sheet.setFrozenRows(1);
     }
     
-    // Log each student
+    // Append rows for each student
+    // This keeps the Coach Name beside/prominent for every student record
     data.students.forEach(student => {
-      centreSheet.appendRow([
+      sheet.appendRow([
+        data.coach,
+        data.centre,
         data.date,
         data.day,
-        data.school || "N/A",
+        data.time || currentTime, 
+        data.hours || "N/A",
         student.name,
         student.status,
-        data.coach,
-        new Date()
+        timestamp
       ]);
     });
 
-    // 2. Log Coach Performance
-    const coachSheetName = "Coach_Performance_Log";
-    let coachSheet = ss.getSheetByName(coachSheetName);
-    
-    if (!coachSheet) {
-      coachSheet = ss.insertSheet(coachSheetName);
-      coachSheet.appendRow(["Date", "Day", "Coach Name", "Centre", "Hours Worked", "Timestamp"]);
-      coachSheet.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#e6f3ff");
-    }
-    
-    coachSheet.appendRow([
-      data.date,
-      data.day,
-      data.coach,
-      data.centre,
-      data.hours,
-      new Date()
-    ]);
+    // Optional: Add a blank row to separate sessions visually
+    sheet.appendRow(["", "", "", "", "", "", "", ""]);
 
-    return ContentService.createTextOutput(JSON.stringify({ "result": "success" }))
+    return ContentService.createTextOutput(JSON.stringify({ "result": "success", "message": "Data organized by Coach and Centre" }))
       .setMimeType(ContentService.MimeType.JSON);
       
   } catch (error) {

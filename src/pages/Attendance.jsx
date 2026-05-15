@@ -156,11 +156,12 @@ const Attendance = () => {
 
     const payload = {
       date: dateString,
-      day: `${dayString} (${sessionType} - ${sessionTime})`,
+      day: dayString,
+      time: `${sessionType} - ${sessionTime}`,
       centre: submitCentre,
-      coachName: coachName,
-      sessionHours: parseFloat(sessionHours),
-      attendanceData: attendanceSummary
+      coach: coachName,
+      hours: parseFloat(sessionHours),
+      students: studentsToSubmit.map(s => ({ name: s.name, status: s.status }))
     };
 
     try {
