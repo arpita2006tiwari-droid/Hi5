@@ -6,7 +6,7 @@ import { MapPin, ShieldCheck, WifiOff, RefreshCcw, Search, Calendar, Users, Cloc
 import { cn } from '../utils/utils';
 
 // Replace this with your Google Apps Script Web App URL after deployment
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDITMvkvrNb7pZLZXi-YN5B1dIgyHrD_mH3ibdARDZheiCuKxao_2xfYMgeMI46u3e/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQri2sJW4idzyizG5nyq4Je1-17zwz66ky1_t86c9nAhUjcOuBlZbLf5LS0_EEF-46/exec";
 
 const initialStudents = [
   // Motilal
