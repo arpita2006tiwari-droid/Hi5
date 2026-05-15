@@ -5,6 +5,7 @@ import { Input } from '../components/ui/Input';
 import { MapPin, ShieldCheck, WifiOff, RefreshCcw, Search, Calendar, Users, Clock, Plus, ChevronDown, Camera, Building, Trophy, Activity, CheckCircle, XCircle, Edit2, Zap, Timer, LocateFixed, AlertCircle } from 'lucide-react';
 import { cn, calculateDistance, formatDistance } from '../utils/utils';
 import { useGeolocation } from '../hooks/useGeolocation';
+import { saveCoachingSession } from '../services/firestoreService';
 
 // Center Geofence Data (Mock for 30+ centers support)
 const CENTER_GEOFENCES = {
@@ -226,17 +227,32 @@ const Attendance = () => {
     };
 
     try {
+      // 1. Sync to Firebase (Persistent Cloud Storage)
+      await saveCoachingSession({
+        ...payload,
+        verified_gps: {
+          lat: coords?.latitude,
+          lng: coords?.longitude,
+          accuracy: accuracy
+        },
+        fraud_score: isInsideRadius ? 100 : 0
+      });
+
+      // 2. Sync to Google Sheets (For reporting)
       await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      alert("Attendance and Coach Hours logged successfully to Google Sheets!");
+
+      alert("Double Sync Successful: Session saved to Firestore & Google Sheets!");
       setIsModalOpen(false);
+      setSessionHours("");
+      setElapsedTime(0);
     } catch (error) {
-      console.error("Error submitting to Sheets:", error);
-      alert("Failed to submit. Please check your connection and URL.");
+      console.error("Sync Error:", error);
+      alert("Submission failed. Please check your connection.");
     } finally {
       setIsSubmitting(false);
     }

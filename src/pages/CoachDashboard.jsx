@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Users, Clock, CalendarCheck, TrendingUp, AlertTriangle, ChevronDown, Building, LayoutDashboard, BarChart3 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 import { cn } from '../utils/utils';
+import { useDashboardData } from '../hooks/useDashboardData';
 
 const attendanceHistory = [
   { name: 'Mon', attendance: 40, overall: 35 },
@@ -48,14 +49,18 @@ const dashboardData = {
     growth: "+8.1%",
     centres: 1,
     activeCoaches: 2
-  }
 };
 
 const CoachDashboard = () => {
+  const { stats, loading } = useDashboardData();
   const [selectedCentre, setSelectedCentre] = useState("Overall Academy");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const currentStats = dashboardData[selectedCentre] || dashboardData["Overall Academy"];
+  const currentStats = {
+    ...dashboardData[selectedCentre] || dashboardData["Overall Academy"],
+    attendance: selectedCentre === "Overall Academy" ? `${stats.avgAttendance}%` : dashboardData[selectedCentre]?.attendance,
+    hours: selectedCentre === "Overall Academy" ? stats.totalHours : dashboardData[selectedCentre]?.hours,
+  };
 
   return (
     <div className="space-y-6 pb-20 md:pb-6 animate-in fade-in duration-500">
@@ -245,8 +250,5 @@ const CoachDashboard = () => {
     </div>
   );
 };
-
-// Re-using Trophy icon
-import { Trophy } from 'lucide-react';
 
 export default CoachDashboard;
