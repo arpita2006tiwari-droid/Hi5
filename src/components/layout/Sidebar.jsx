@@ -20,10 +20,10 @@ const Sidebar = () => {
     <aside className="hidden w-64 flex-col border-r border-border bg-card md:flex">
       <div className="flex h-16 items-center border-b border-border px-6">
         <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-primary">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-black italic">
-            S
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-black tracking-tighter">
+            H5
           </div>
-          SPORTIFY
+          Hi5 Foundation
         </div>
       </div>
 

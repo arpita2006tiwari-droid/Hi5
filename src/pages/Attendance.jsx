@@ -624,8 +624,8 @@ const Attendance = () => {
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <Zap className="h-6 w-6 text-primary fill-primary/20" />
-                        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">SPORTIFY Verification</h1>
+                        <div className="h-6 w-6 bg-primary text-primary-foreground flex items-center justify-center rounded font-black text-[10px] tracking-tighter">H5</div>
+                        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">Hi5 Verification</h1>
                       </div>
                       <p className="text-muted-foreground text-sm font-medium">Precision Geofencing & Coaching Session Tracking</p>
                     </div>

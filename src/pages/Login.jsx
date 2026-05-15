@@ -28,12 +28,12 @@ const Login = () => {
       className="w-full max-w-md mx-auto"
     >
       <div className="flex flex-col items-center gap-4 mb-8">
-        <div className="h-16 w-16 bg-primary/10 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
-          <Zap className="h-8 w-8 text-primary fill-primary/20" />
+        <div className="h-16 w-16 bg-primary/10 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 font-black text-2xl text-primary tracking-tighter">
+          H5
         </div>
         <div className="text-center">
-          <h1 className="text-4xl font-black tracking-tighter text-foreground mb-1 uppercase italic">SPORTIFY</h1>
-          <p className="text-muted-foreground font-medium text-sm">Elite Sports Management Platform</p>
+          <h1 className="text-4xl font-black tracking-tighter text-foreground mb-1 uppercase">Hi5 Foundation</h1>
+          <p className="text-muted-foreground font-medium text-sm">Professional Sports Excellence Platform</p>
         </div>
       </div>
       

@@ -12,7 +12,7 @@ const Topbar = () => {
   return (
     <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-border/50 bg-background/80 px-6 backdrop-blur-xl">
       <div className="flex items-center gap-4">
-        <h2 className="text-xl font-black italic tracking-tighter text-primary md:hidden">SPORTIFY</h2>
+        <h2 className="text-xl font-black tracking-tighter text-primary md:hidden">Hi5 FOUNDATION</h2>
       </div>
 
       <div className="flex items-center gap-3">
