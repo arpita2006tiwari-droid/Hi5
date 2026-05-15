@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Users, Clock, CalendarCheck, TrendingUp, AlertTriangle, ChevronDown, Building, LayoutDashboard, BarChart3 } from 'lucide-react';
+import { Users, Clock, CalendarCheck, TrendingUp, AlertTriangle, ChevronDown, Building, BarChart3, Trophy } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 import { cn } from '../utils/utils';
 import { useDashboardData } from '../hooks/useDashboardData';
@@ -49,10 +49,11 @@ const dashboardData = {
     growth: "+8.1%",
     centres: 1,
     activeCoaches: 2
+  }
 };
 
 const CoachDashboard = () => {
-  const { stats, loading } = useDashboardData();
+  const { stats } = useDashboardData();
   const [selectedCentre, setSelectedCentre] = useState("Overall Academy");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
