@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { MapPin, ShieldCheck, WifiOff, RefreshCcw, Search, Calendar, Users, Clock, Plus, ChevronDown, Camera, Building, Trophy, Activity, CheckCircle, XCircle, Edit2, Zap, Timer, LocateFixed, AlertCircle } from 'lucide-react';
+import { MapPin, ShieldCheck, WifiOff, RefreshCcw, Search, Calendar, Users, Clock, Plus, ChevronDown, Building, Trophy, Activity, CheckCircle, XCircle, Edit2, Timer, LocateFixed, AlertCircle, Camera } from 'lucide-react';
 import { cn, calculateDistance, formatDistance } from '../utils/utils';
 import { useGeolocation } from '../hooks/useGeolocation';
+import { useCentres } from '../hooks/useCentres';
 import { saveCoachingSession } from '../services/firestoreService';
 
 // Center Geofence Data (Mock for 30+ centers support)
@@ -42,17 +44,30 @@ const initialStudents = [
 ];
 
 const Attendance = () => {
+  // Hooks & External Data
+  const { centres, addCentre } = useCentres();
+  const { coords, accuracy, loading: geoLoading } = useGeolocation();
+  const userRole = localStorage.getItem('userRole') || 'coach';
+
+  // Core Application State
   const [isOffline] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Form State
-  const [students, setStudents] = useState(initialStudents);
-  const [coachName, setCoachName] = useState("");
-  const [sessionHours, setSessionHours] = useState("");
   
-  const [availableCentres, setAvailableCentres] = useState(["Motilal", "Poonam Nagar"]);
+  // Data State
+  const [students, setStudents] = useState(initialStudents);
+  const [coaches, setCoaches] = useState(["Rahul Sharma", "Siddharth Malhotra", "Anjali Singh"]);
+  const availableCentres = useMemo(() => {
+    const firestoreCentres = centres ? Object.keys(centres) : [];
+    return firestoreCentres.length > 0 ? firestoreCentres : ["Motilal", "Poonam Nagar", "Andheri", "Bandra"];
+  }, [centres]);
   const [selectedCentre, setSelectedCentre] = useState("All Centres");
+  const [submitCentre, setSubmitCentre] = useState("Motilal");
+
+  const [coachName, setCoachName] = useState("Rahul Sharma");
+  const [sessionHours, setSessionHours] = useState("");
+  const [isAddingCoach, setIsAddingCoach] = useState(false);
+  const [newCoachName, setNewCoachName] = useState("");
 
   const [schoolMapping, setSchoolMapping] = useState({
     "Motilal": ["St. Mary's", "Don Bosco"],
@@ -75,15 +90,11 @@ const Attendance = () => {
     parentNumber: "", parentEmail: "", parentAddress: "", schoolIdPic: null, aadharPic: null
   });
 
-  // Modal State
-  const [submitCentre, setSubmitCentre] = useState("Motilal");
-  const [coaches, setCoaches] = useState(["Kevin", "Rahul"]);
-  const [isAddingCoach, setIsAddingCoach] = useState(false);
-  const [newCoachName, setNewCoachName] = useState("");
+  // UI & Interaction State
+  const [isAddCentreOpen, setIsAddCentreOpen] = useState(false);
+  const [newCentre, setNewCentre] = useState({ name: '', lat: '', lng: '', radius: 100 });
 
-  // Tab State
-  // SPORTIFY Geofencing States
-  const { coords, accuracy, loading: geoLoading } = useGeolocation();
+  // Session tracking states
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [sessionStartTime, setSessionStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -100,8 +111,8 @@ const Attendance = () => {
   }, [isSessionActive, sessionStartTime]);
 
   const { distanceToCenter, isInsideRadius } = useMemo(() => {
-    if (coords && selectedCentre && CENTER_GEOFENCES[selectedCentre]) {
-      const center = CENTER_GEOFENCES[selectedCentre];
+    if (coords && selectedCentre && centres[selectedCentre]) {
+      const center = centres[selectedCentre];
       const dist = calculateDistance(
         coords.latitude,
         coords.longitude,
@@ -114,7 +125,24 @@ const Attendance = () => {
       };
     }
     return { distanceToCenter: null, isInsideRadius: false };
-  }, [coords, selectedCentre]);
+  }, [coords, selectedCentre, centres]);
+
+  const handleAddCentre = async (e) => {
+    e.preventDefault();
+    try {
+      await addCentre({
+        ...newCentre,
+        lat: parseFloat(newCentre.lat),
+        lng: parseFloat(newCentre.lng),
+        radius: parseInt(newCentre.radius)
+      });
+      setIsAddCentreOpen(false);
+      setNewCentre({ name: '', lat: '', lng: '', radius: 100 });
+      alert("New centre added and geofence activated!");
+    } catch {
+      alert("Failed to add centre. Please check coordinates.");
+    }
+  };
 
   const formatTime = (seconds) => {
     const hrs = Math.floor(seconds / 3600);
@@ -646,34 +674,96 @@ const Attendance = () => {
                       <p className="text-muted-foreground text-sm font-medium">Precision Geofencing & Coaching Session Tracking</p>
                     </div>
 
-                    {/* GPS Verification Badge */}
-                    <div className={cn(
-                      "flex items-center gap-3 px-4 py-2 rounded-2xl border backdrop-blur-md transition-all duration-500",
-                      geoLoading ? "bg-muted/50 border-border animate-pulse" :
-                      isInsideRadius ? "bg-success/10 border-success/30 text-success shadow-[0_0_20px_-5px_rgba(34,197,94,0.3)]" : 
-                      "bg-destructive/10 border-destructive/30 text-destructive shadow-[0_0_20px_-5px_rgba(239,68,68,0.3)]"
-                    )}>
-                      {geoLoading ? (
-                        <>
-                          <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce" />
-                          <span className="text-xs font-bold uppercase tracking-wider">Fetching GPS...</span>
-                        </>
-                      ) : (
-                        <>
+                    <div className="flex items-center gap-3">
+                      {userRole === 'admin' && (
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setIsAddCentreOpen(true)}
+                          className="gap-2 border-primary/20 hover:border-primary hover:bg-primary/5 text-primary rounded-xl"
+                        >
+                          <Plus className="h-4 w-4" /> Manage Geofences
+                        </Button>
+                      )}
+                      <div className={cn(
+                        "flex items-center gap-3 px-4 py-2 rounded-2xl border transition-all duration-500",
+                        isInsideRadius ? "bg-success/10 border-success/30 text-success shadow-[0_0_20px_-5px_rgba(34,197,94,0.3)]" : 
+                        geoLoading ? "bg-muted/50 border-border text-muted-foreground" :
+                        "bg-destructive/10 border-destructive/30 text-destructive shadow-[0_0_20px_-5px_rgba(239,68,68,0.3)]"
+                      )}>
+                        <div className="flex items-center gap-2 font-bold text-sm">
                           {isInsideRadius ? <LocateFixed className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
                           <div className="flex flex-col">
-                            <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-                              {isInsideRadius ? "Verified Location" : "Outside Geofence"}
-                            </span>
-                            <span className="text-[9px] opacity-80 font-medium">
-                              {distanceToCenter ? `${formatDistance(distanceToCenter)} from centre` : "Calculating..."} 
-                              {accuracy && ` (±${Math.round(accuracy)}m)`}
-                            </span>
+                            <span className="uppercase tracking-widest text-[8px] opacity-70">Location Status</span>
+                            <span>{isInsideRadius ? "Verified Location" : geoLoading ? "Fetching GPS..." : "Outside Geofence"}</span>
                           </div>
-                        </>
-                      )}
+                        </div>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Add Centre Modal */}
+                  {isAddCentreOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-card border border-border rounded-3xl p-6 shadow-2xl w-full max-w-md"
+                      >
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-xl font-bold flex items-center gap-2">
+                            <Building className="h-5 w-5 text-primary" /> Add New Centre
+                          </h2>
+                          <Button variant="ghost" size="icon" onClick={() => setIsAddCentreOpen(false)}>
+                            <XCircle className="h-5 w-5" />
+                          </Button>
+                        </div>
+                        <form onSubmit={handleAddCentre} className="space-y-4">
+                          <div>
+                            <label className="text-xs font-bold uppercase text-muted-foreground mb-1 block">Centre Name</label>
+                            <Input 
+                              placeholder="e.g. Malad East" 
+                              value={newCentre.name}
+                              onChange={(e) => setNewCentre({...newCentre, name: e.target.value})}
+                              required
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-xs font-bold uppercase text-muted-foreground mb-1 block">Latitude</label>
+                              <Input 
+                                type="number" step="any" placeholder="19.XXXX" 
+                                value={newCentre.lat}
+                                onChange={(e) => setNewCentre({...newCentre, lat: e.target.value})}
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-bold uppercase text-muted-foreground mb-1 block">Longitude</label>
+                              <Input 
+                                type="number" step="any" placeholder="72.XXXX" 
+                                value={newCentre.lng}
+                                onChange={(e) => setNewCentre({...newCentre, lng: e.target.value})}
+                                required
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold uppercase text-muted-foreground mb-1 block">Geofence Radius (meters)</label>
+                            <Input 
+                              type="number" 
+                              value={newCentre.radius}
+                              onChange={(e) => setNewCentre({...newCentre, radius: e.target.value})}
+                              required
+                            />
+                          </div>
+                          <div className="flex gap-3 pt-2">
+                            <Button type="button" variant="ghost" className="flex-1 rounded-xl" onClick={() => setIsAddCentreOpen(false)}>Cancel</Button>
+                            <Button type="submit" className="flex-1 rounded-xl shadow-lg shadow-primary/20">Add Centre</Button>
+                          </div>
+                        </form>
+                      </motion.div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Card className="glass border-border/50 bg-background/40">
@@ -920,8 +1010,7 @@ const Attendance = () => {
                   onClick={() => {
                     if (newFacilityName.trim()) {
                       if (addFacilityType === 'centre') {
-                        setAvailableCentres([...availableCentres, newFacilityName.trim()]);
-                        setSchoolMapping({ ...schoolMapping, [newFacilityName.trim()]: [] });
+                        // Centres are now handled by Firestore!
                         setSelectedCentre(newFacilityName.trim());
                       } else {
                         const targetCentre = selectedCentre === 'All Centres' ? availableCentres[0] : selectedCentre;
