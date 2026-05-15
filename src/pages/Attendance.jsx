@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { MapPin, ShieldCheck, WifiOff, RefreshCcw, Search, Calendar, Users, Clock, Plus, ChevronDown, Camera, Building, Trophy, Activity, CheckCircle, XCircle, Edit2 } from 'lucide-react';
-import { cn } from '../utils/utils';
+import { MapPin, ShieldCheck, WifiOff, RefreshCcw, Search, Calendar, Users, Clock, Plus, ChevronDown, Camera, Building, Trophy, Activity, CheckCircle, XCircle, Edit2, Zap, Timer, LocateFixed, AlertCircle } from 'lucide-react';
+import { cn, calculateDistance, formatDistance } from '../utils/utils';
+import { useGeolocation } from '../hooks/useGeolocation';
 
-// Replace this with your Google Apps Script Web App URL after deployment
+// Center Geofence Data (Mock for 30+ centers support)
+const CENTER_GEOFENCES = {
+  "Motilal": { lat: 19.1136, lng: 72.8697, radius: 100 }, // Coordinates for Motilal
+  "Poonam Nagar": { lat: 19.1250, lng: 72.8750, radius: 100 },
+  "Andheri": { lat: 19.1136, lng: 72.8489, radius: 150 },
+};
+
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQri2sJW4idzyizG5nyq4Je1-17zwz66ky1_t86c9nAhUjcOuBlZbLf5LS0_EEF-46/exec";
 
 const initialStudents = [
@@ -34,8 +41,7 @@ const initialStudents = [
 ];
 
 const Attendance = () => {
-  const [isInsideRadius, setIsInsideRadius] = useState(true);
-  const [isOffline, setIsOffline] = useState(false);
+  const [isOffline] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -75,6 +81,62 @@ const Attendance = () => {
   const [newCoachName, setNewCoachName] = useState("");
 
   // Tab State
+  // SPORTIFY Geofencing States
+  const { coords, accuracy, loading: geoLoading } = useGeolocation();
+  const [isSessionActive, setIsSessionActive] = useState(false);
+  const [sessionStartTime, setSessionStartTime] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Timer Effect
+  useEffect(() => {
+    let interval;
+    if (isSessionActive) {
+      interval = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - sessionStartTime) / 1000));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isSessionActive, sessionStartTime]);
+
+  const { distanceToCenter, isInsideRadius } = useMemo(() => {
+    if (coords && selectedCentre && CENTER_GEOFENCES[selectedCentre]) {
+      const center = CENTER_GEOFENCES[selectedCentre];
+      const dist = calculateDistance(
+        coords.latitude,
+        coords.longitude,
+        center.lat,
+        center.lng
+      );
+      return {
+        distanceToCenter: dist,
+        isInsideRadius: dist <= center.radius
+      };
+    }
+    return { distanceToCenter: null, isInsideRadius: false };
+  }, [coords, selectedCentre]);
+
+  const formatTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleStartSession = () => {
+    if (!isInsideRadius) {
+      alert("Verification Failed: You must be inside the centre geofence to start a session.");
+      return;
+    }
+    setIsSessionActive(true);
+    setSessionStartTime(Date.now());
+  };
+
+  const handleEndSession = () => {
+    setIsSessionActive(false);
+    setSessionHours((elapsedTime / 3600).toFixed(2));
+    setIsModalOpen(true);
+  };
+
   const [activeTab, setActiveTab] = useState('Attendance');
   const [explorerMode, setExplorerMode] = useState('coaches'); // 'coaches' | 'facilities'
   const [selectedExplorerCoach, setSelectedExplorerCoach] = useState(null);
@@ -152,7 +214,6 @@ const Attendance = () => {
     setIsSubmitting(true);
 
     const studentsToSubmit = students.filter(s => s.centre === submitCentre);
-    const attendanceSummary = studentsToSubmit.map(s => `${s.name}: ${s.status}`).join(', ');
 
     const payload = {
       date: dateString,
@@ -354,7 +415,7 @@ const Attendance = () => {
                 {isInsideRadius ? "Inside Allowed Zone" : "Outside Allowed Zone"}
               </div>
               <div className="text-xs opacity-80">
-                Current Distance: 42m / 100m radius
+                {distanceToCenter ? `${formatDistance(distanceToCenter)} distance` : "Calculating..."}
               </div>
             </div>
 
@@ -428,7 +489,6 @@ const Attendance = () => {
 
       {activeTab === 'Explorer' && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          {/* Mode Toggle */}
           {!selectedExplorerCoach && !selectedExplorerFacility && (
             <div className="flex w-full max-w-sm mx-auto bg-muted/50 p-1 rounded-xl mb-6">
               <button 
@@ -561,13 +621,105 @@ const Attendance = () => {
                     ← Back to Directory
                   </Button>
                   
-                  <div className="flex items-center gap-4 mb-6 bg-background border border-border p-4 rounded-2xl">
-                    <div className="h-16 w-16 rounded-full bg-accent/10 flex items-center justify-center text-accent shrink-0">
-                      <Building className="h-8 w-8" />
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-6 w-6 text-primary fill-primary/20" />
+                        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">SPORTIFY Verification</h1>
+                      </div>
+                      <p className="text-muted-foreground text-sm font-medium">Precision Geofencing & Coaching Session Tracking</p>
                     </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-foreground">{selectedExplorerFacility}</h2>
-                      <p className="text-muted-foreground">Facility Performance Dashboard</p>
+
+                    {/* GPS Verification Badge */}
+                    <div className={cn(
+                      "flex items-center gap-3 px-4 py-2 rounded-2xl border backdrop-blur-md transition-all duration-500",
+                      geoLoading ? "bg-muted/50 border-border animate-pulse" :
+                      isInsideRadius ? "bg-success/10 border-success/30 text-success shadow-[0_0_20px_-5px_rgba(34,197,94,0.3)]" : 
+                      "bg-destructive/10 border-destructive/30 text-destructive shadow-[0_0_20px_-5px_rgba(239,68,68,0.3)]"
+                    )}>
+                      {geoLoading ? (
+                        <>
+                          <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce" />
+                          <span className="text-xs font-bold uppercase tracking-wider">Fetching GPS...</span>
+                        </>
+                      ) : (
+                        <>
+                          {isInsideRadius ? <LocateFixed className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-black uppercase tracking-widest leading-none">
+                              {isInsideRadius ? "Verified Location" : "Outside Geofence"}
+                            </span>
+                            <span className="text-[9px] opacity-80 font-medium">
+                              {distanceToCenter ? `${formatDistance(distanceToCenter)} from centre` : "Calculating..."} 
+                              {accuracy && ` (±${Math.round(accuracy)}m)`}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card className="glass border-border/50 bg-background/40">
+                      <CardContent className="p-4 flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Active Session</span>
+                          <div className={cn("h-2 w-2 rounded-full", isSessionActive ? "bg-success animate-pulse shadow-[0_0_8px_rgba(34,197,94,1)]" : "bg-muted")} />
+                        </div>
+                        <div className="text-3xl font-black font-mono tracking-tighter">
+                          {formatTime(elapsedTime)}
+                        </div>
+                        {!isSessionActive ? (
+                          <Button 
+                            className="w-full rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
+                            disabled={geoLoading || !isInsideRadius}
+                            onClick={handleStartSession}
+                          >
+                            <Timer className="mr-2 h-4 w-4" /> Start Session
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="destructive"
+                            className="w-full rounded-xl shadow-lg shadow-destructive/20"
+                            onClick={handleEndSession}
+                          >
+                            <Timer className="mr-2 h-4 w-4" /> End Session
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card className="glass border-border/50 bg-background/40">
+                      <CardContent className="p-4 flex flex-col gap-3">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Selected Centre</span>
+                        <div className="flex items-center gap-2">
+                          <Building className="h-5 w-5 text-primary" />
+                          <span className="text-lg font-bold">{selectedCentre}</span>
+                        </div>
+                        <div className="flex bg-muted/50 p-1 rounded-xl">
+                          {Object.keys(CENTER_GEOFENCES).map(c => (
+                            <button
+                              key={c}
+                              onClick={() => setSelectedCentre(c)}
+                              className={cn(
+                                "flex-1 py-1.5 text-[10px] font-bold rounded-lg transition-all",
+                                selectedCentre === c ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+                              )}
+                            >
+                              {c}
+                            </button>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <h2 className="text-xl font-bold flex items-center gap-2">
+                        <Users className="h-5 w-5 text-primary" /> 
+                        Roster Control
+                      </h2>
                     </div>
                   </div>
 

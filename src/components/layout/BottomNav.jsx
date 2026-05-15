@@ -4,15 +4,19 @@ import { LayoutDashboard, Users, Calendar, ShieldAlert } from 'lucide-react';
 import { cn } from '../../utils/utils';
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Home', href: '/dashboard/coach' },
-  { icon: Calendar, label: 'Attendance', href: '/dashboard/attendance' },
-  { icon: ShieldAlert, label: 'Alerts', href: '/dashboard/fraud' },
+  { icon: LayoutDashboard, label: 'Home', href: '/dashboard/coach', roles: ['admin'] },
+  { icon: Calendar, label: 'Attendance', href: '/dashboard/attendance', roles: ['admin', 'coach'] },
+  { icon: ShieldAlert, label: 'Alerts', href: '/dashboard/fraud', roles: ['admin'] },
 ];
 
 const BottomNav = () => {
+  const userRole = localStorage.getItem('userRole') || 'coach';
+
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-border bg-background/90 backdrop-blur-md pb-safe-area shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.1)]">
-      {navItems.map((item) => (
+      {navItems
+        .filter(item => item.roles.includes(userRole))
+        .map((item) => (
         <NavLink
           key={item.href}
           to={item.href}

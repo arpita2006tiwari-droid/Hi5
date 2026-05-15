@@ -62,7 +62,8 @@ const CoachDashboard = () => {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-3xl font-bold tracking-tight">Academy Growth</h1>
+            <Zap className="h-6 w-6 text-primary fill-primary/20" />
+            <h1 className="text-3xl font-bold tracking-tight">SPORTIFY Analytics</h1>
             <div className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary uppercase tracking-wider">Live</div>
           </div>
           <p className="text-muted-foreground text-sm">Monitoring performance across {selectedCentre === "Overall Academy" ? "all centres" : selectedCentre}.</p>

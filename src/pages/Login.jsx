@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
-import { Mail, Lock, ArrowRight, Activity } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Activity, Zap } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -25,12 +25,23 @@ const Login = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      className="w-full max-w-md mx-auto"
     >
+      <div className="flex flex-col items-center gap-4 mb-8">
+        <div className="h-16 w-16 bg-primary/10 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+          <Zap className="h-8 w-8 text-primary fill-primary/20" />
+        </div>
+        <div className="text-center">
+          <h1 className="text-4xl font-black tracking-tighter text-foreground mb-1 uppercase italic">SPORTIFY</h1>
+          <p className="text-muted-foreground font-medium text-sm">Elite Sports Management Platform</p>
+        </div>
+      </div>
+      
       <Card className="glass border-border/50 shadow-2xl">
-        <CardHeader className="space-y-2 pb-6">
-          <CardTitle className="text-3xl font-bold tracking-tight">Welcome back</CardTitle>
-          <CardDescription className="text-base">
-            Enter your credentials to access your dashboard
+        <CardHeader className="space-y-1 pb-6 text-center">
+          <CardTitle className="text-2xl font-bold tracking-tight">Coach Portal</CardTitle>
+          <CardDescription>
+            Secure GPS-verified access
           </CardDescription>
         </CardHeader>
         <CardContent>
