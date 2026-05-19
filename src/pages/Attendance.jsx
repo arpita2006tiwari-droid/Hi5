@@ -20,27 +20,27 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQri2sJW4idz
 
 const initialStudents = [
   // Motilal
-  { id: 1, name: 'Liam Johnson', status: 'pending', centre: 'Motilal' },
-  { id: 2, name: 'Emma Williams', status: 'pending', centre: 'Motilal' },
-  { id: 3, name: 'Noah Brown', status: 'pending', centre: 'Motilal' },
-  { id: 4, name: 'Olivia Jones', status: 'pending', centre: 'Motilal' },
-  { id: 5, name: 'William Garcia', status: 'pending', centre: 'Motilal' },
-  { id: 6, name: 'James Smith', status: 'pending', centre: 'Motilal' },
-  { id: 7, name: 'Isabella Taylor', status: 'pending', centre: 'Motilal' },
-  { id: 8, name: 'Mason White', status: 'pending', centre: 'Motilal' },
-  { id: 9, name: 'Sophia Harris', status: 'pending', centre: 'Motilal' },
-  { id: 10, name: 'Elijah Clark', status: 'pending', centre: 'Motilal' },
+  { id: 1, name: 'Liam Johnson', status: 'pending', centre: 'Motilal', school: "St. Mary's" },
+  { id: 2, name: 'Emma Williams', status: 'pending', centre: 'Motilal', school: "Don Bosco" },
+  { id: 3, name: 'Noah Brown', status: 'pending', centre: 'Motilal', school: "St. Mary's" },
+  { id: 4, name: 'Olivia Jones', status: 'pending', centre: 'Motilal', school: "Don Bosco" },
+  { id: 5, name: 'William Garcia', status: 'pending', centre: 'Motilal', school: "St. Mary's" },
+  { id: 6, name: 'James Smith', status: 'pending', centre: 'Motilal', school: "Don Bosco" },
+  { id: 7, name: 'Isabella Taylor', status: 'pending', centre: 'Motilal', school: "St. Mary's" },
+  { id: 8, name: 'Mason White', status: 'pending', centre: 'Motilal', school: "Don Bosco" },
+  { id: 9, name: 'Sophia Harris', status: 'pending', centre: 'Motilal', school: "St. Mary's" },
+  { id: 10, name: 'Elijah Clark', status: 'pending', centre: 'Motilal', school: "Don Bosco" },
   // Poonam Nagar
-  { id: 11, name: 'Ava Lewis', status: 'pending', centre: 'Poonam Nagar' },
-  { id: 12, name: 'Lucas Robinson', status: 'pending', centre: 'Poonam Nagar' },
-  { id: 13, name: 'Mia Walker', status: 'pending', centre: 'Poonam Nagar' },
-  { id: 14, name: 'Ethan Hall', status: 'pending', centre: 'Poonam Nagar' },
-  { id: 15, name: 'Amelia Young', status: 'pending', centre: 'Poonam Nagar' },
-  { id: 16, name: 'Alexander Allen', status: 'pending', centre: 'Poonam Nagar' },
-  { id: 17, name: 'Harper King', status: 'pending', centre: 'Poonam Nagar' },
-  { id: 18, name: 'Benjamin Wright', status: 'pending', centre: 'Poonam Nagar' },
-  { id: 19, name: 'Evelyn Scott', status: 'pending', centre: 'Poonam Nagar' },
-  { id: 20, name: 'Henry Green', status: 'pending', centre: 'Poonam Nagar' },
+  { id: 11, name: 'Ava Lewis', status: 'pending', centre: 'Poonam Nagar', school: "Podar International" },
+  { id: 12, name: 'Lucas Robinson', status: 'pending', centre: 'Poonam Nagar', school: "Podar International" },
+  { id: 13, name: 'Mia Walker', status: 'pending', centre: 'Poonam Nagar', school: "Podar International" },
+  { id: 14, name: 'Ethan Hall', status: 'pending', centre: 'Poonam Nagar', school: "Podar International" },
+  { id: 15, name: 'Amelia Young', status: 'pending', centre: 'Poonam Nagar', school: "Podar International" },
+  { id: 16, name: 'Alexander Allen', status: 'pending', centre: 'Poonam Nagar', school: "Podar International" },
+  { id: 17, name: 'Harper King', status: 'pending', centre: 'Poonam Nagar', school: "Podar International" },
+  { id: 18, name: 'Benjamin Wright', status: 'pending', centre: 'Poonam Nagar', school: "Podar International" },
+  { id: 19, name: 'Evelyn Scott', status: 'pending', centre: 'Poonam Nagar', school: "Podar International" },
+  { id: 20, name: 'Henry Green', status: 'pending', centre: 'Poonam Nagar', school: "Podar International" },
 ];
 
 const Attendance = () => {
@@ -225,9 +225,16 @@ const Attendance = () => {
     });
   };
 
-  const displayedStudents = selectedCentre === 'All Centres' 
-    ? students 
-    : students.filter(s => s.centre === selectedCentre);
+  const displayedStudents = useMemo(() => {
+    let filtered = students;
+    if (selectedCentre !== 'All Centres') {
+      filtered = filtered.filter(s => s.centre === selectedCentre);
+    }
+    if (selectedSchool !== 'All Schools') {
+      filtered = filtered.filter(s => s.school === selectedSchool);
+    }
+    return filtered;
+  }, [students, selectedCentre, selectedSchool]);
 
   const submitToGoogleSheets = async () => {
     if (!coachName || !sessionHours) {
@@ -336,7 +343,10 @@ const Attendance = () => {
             <select 
               className="bg-transparent border-none outline-none text-sm font-medium w-full text-foreground appearance-none cursor-pointer"
               value={selectedCentre}
-              onChange={(e) => setSelectedCentre(e.target.value)}
+              onChange={(e) => {
+                setSelectedCentre(e.target.value);
+                setSelectedSchool("All Schools");
+              }}
             >
               <option value="All Centres">All Centres</option>
               {availableCentres.map(c => <option key={c} value={c}>{c}</option>)}
@@ -480,56 +490,76 @@ const Attendance = () => {
 
         {/* Student List Grouped by Centre */}
         <div className="col-span-2 space-y-6">
-          {Object.entries(groupedStudents).map(([centreName, centreStudents]) => (
-            <Card key={centreName} className="glass border-border/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center justify-between">
-                  {centreName}
-                  <span className="text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-md border border-border/50">
-                    {centreStudents.length} Students
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {centreStudents.map((student) => (
-                    <div key={student.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border border-border/50 bg-background/50 hover:bg-muted/50 transition-colors gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                          {student.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">{student.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {student.status === 'pending' ? 'Not Marked' : 'Marked'}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex bg-muted rounded-lg p-1">
-                        <button
-                          onClick={() => handleStatusChange(student.id, 'present')}
-                          className={cn(
-                            "px-4 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer",
-                            student.status === 'present' ? "bg-success text-white shadow" : "text-muted-foreground hover:bg-background"
-                          )}>
-                          Present
-                        </button>
-                        <button
-                          onClick={() => handleStatusChange(student.id, 'absent')}
-                          className={cn(
-                            "px-4 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer",
-                            student.status === 'absent' ? "bg-destructive text-white shadow" : "text-muted-foreground hover:bg-background"
-                          )}>
-                          Absent
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+          {selectedCentre === 'All Centres' && selectedSchool === 'All Schools' ? (
+            <Card className="glass border-border/50 shadow-md">
+              <CardContent className="p-12 flex flex-col items-center justify-center text-center gap-4">
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary animate-pulse">
+                  <MapPin className="h-8 w-8" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold tracking-tight text-foreground">Select a Centre or School</h3>
+                  <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                    To record attendance, please select a specific centre or school from the dropdown filters above.
+                  </p>
                 </div>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            Object.entries(groupedStudents).map(([centreName, centreStudents]) => (
+              <Card key={centreName} className="glass border-border/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    {centreName}
+                    <span className="text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-md border border-border/50">
+                      {centreStudents.length} Students
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {centreStudents.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-6">No students found matching this criteria.</p>
+                    ) : (
+                      centreStudents.map((student) => (
+                        <div key={student.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl border border-border/50 bg-background/50 hover:bg-muted/50 transition-colors gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                              {student.name.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{student.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {student.status === 'pending' ? 'Not Marked' : 'Marked'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex bg-muted rounded-lg p-1">
+                            <button
+                              onClick={() => handleStatusChange(student.id, 'present')}
+                              className={cn(
+                                "px-4 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer",
+                                student.status === 'present' ? "bg-success text-white shadow" : "text-muted-foreground hover:bg-background"
+                              )}>
+                              Present
+                            </button>
+                            <button
+                              onClick={() => handleStatusChange(student.id, 'absent')}
+                              className={cn(
+                                "px-4 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer",
+                                student.status === 'absent' ? "bg-destructive text-white shadow" : "text-muted-foreground hover:bg-background"
+                              )}>
+                              Absent
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       </div>
       </div>
