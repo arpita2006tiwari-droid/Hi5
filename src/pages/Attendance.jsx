@@ -167,7 +167,7 @@ const Attendance = () => {
   };
 
   const [activeTab, setActiveTab] = useState('Attendance');
-  const [explorerMode, setExplorerMode] = useState('coaches'); // 'coaches' | 'facilities'
+  const [explorerMode, setExplorerMode] = useState(userRole === 'admin' ? 'coaches' : 'facilities'); // 'coaches' | 'facilities'
   const [selectedExplorerCoach, setSelectedExplorerCoach] = useState(null);
   const [selectedExplorerFacility, setSelectedExplorerFacility] = useState(null);
 
@@ -292,6 +292,10 @@ const Attendance = () => {
     return acc;
   }, {});
 
+  const tabs = userRole === 'admin' 
+    ? ['Attendance', 'Timeline', 'Insights', 'Explorer']
+    : ['Attendance', 'Centre Attendance'];
+
   return (
     <div className="space-y-6">
 
@@ -299,12 +303,12 @@ const Attendance = () => {
       <div className="space-y-3 mb-6">
         {/* Tabs */}
         <div className="flex w-full bg-muted/50 p-1 rounded-xl mb-4">
-          {['Attendance', 'Timeline', 'Insights', 'Explorer'].map(tab => (
+          {tabs.map(tab => (
             <button 
               key={tab}
               onClick={() => { 
                 setActiveTab(tab); 
-                if(tab !== 'Explorer') {
+                if(tab !== 'Explorer' && tab !== 'Centre Attendance') {
                   setSelectedExplorerCoach(null); 
                   setSelectedExplorerFacility(null);
                 }
@@ -531,9 +535,9 @@ const Attendance = () => {
       </div>
       )}
 
-      {activeTab === 'Explorer' && (
+      {(activeTab === 'Explorer' || activeTab === 'Centre Attendance') && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          {!selectedExplorerCoach && !selectedExplorerFacility && (
+          {!selectedExplorerCoach && !selectedExplorerFacility && userRole === 'admin' && (
             <div className="flex w-full max-w-sm mx-auto bg-muted/50 p-1 rounded-xl mb-6">
               <button 
                 onClick={() => setExplorerMode('coaches')}
@@ -854,35 +858,37 @@ const Attendance = () => {
                               <h3 className="text-3xl font-bold text-foreground">{totalFacilityStudents}</h3>
                             </CardContent>
                           </Card>
-                          <Card className="glass border-border/50 md:col-span-2">
-                            <CardHeader className="px-6 pt-6 pb-2 flex flex-row items-center justify-between">
-                              <CardTitle className="text-lg flex items-center gap-2">
-                                <Trophy className="h-5 w-5 text-accent" /> Tournament Performance
-                              </CardTitle>
-                              <Button variant="ghost" size="sm" className="h-8 hover:bg-muted" onClick={() => {
-                                setTempTournamentStats(currentTournament);
-                                setIsEditTournamentOpen(true);
-                              }}>
-                                <Edit2 className="h-4 w-4" />
-                              </Button>
-                            </CardHeader>
-                            <CardContent className="p-6 grid grid-cols-3 gap-4">
-                              <div className="bg-background/50 rounded-xl p-4 border border-border flex flex-col items-center justify-center text-center">
-                                <p className="text-sm text-muted-foreground mb-1">Played</p>
-                                <h4 className="text-3xl font-bold">{currentTournament.played}</h4>
-                              </div>
-                              <div className="bg-success/10 rounded-xl p-4 border border-success/20 flex flex-col items-center justify-center text-center text-success">
-                                <CheckCircle className="h-6 w-6 mb-1" />
-                                <p className="text-xs font-medium mb-1">Won</p>
-                                <h4 className="text-2xl font-bold">{currentTournament.won}</h4>
-                              </div>
-                              <div className="bg-destructive/10 rounded-xl p-4 border border-destructive/20 flex flex-col items-center justify-center text-center text-destructive">
-                                <XCircle className="h-6 w-6 mb-1" />
-                                <p className="text-xs font-medium mb-1">Lost</p>
-                                <h4 className="text-2xl font-bold">{currentTournament.lost}</h4>
-                              </div>
-                            </CardContent>
-                          </Card>
+                          {userRole === 'admin' && (
+                            <Card className="glass border-border/50 md:col-span-2">
+                              <CardHeader className="px-6 pt-6 pb-2 flex flex-row items-center justify-between">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                  <Trophy className="h-5 w-5 text-accent" /> Tournament Performance
+                                </CardTitle>
+                                <Button variant="ghost" size="sm" className="h-8 hover:bg-muted" onClick={() => {
+                                  setTempTournamentStats(currentTournament);
+                                  setIsEditTournamentOpen(true);
+                                }}>
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                              </CardHeader>
+                              <CardContent className="p-6 grid grid-cols-3 gap-4">
+                                <div className="bg-background/50 rounded-xl p-4 border border-border flex flex-col items-center justify-center text-center">
+                                  <p className="text-sm text-muted-foreground mb-1">Played</p>
+                                  <h4 className="text-3xl font-bold">{currentTournament.played}</h4>
+                                </div>
+                                <div className="bg-success/10 rounded-xl p-4 border border-success/20 flex flex-col items-center justify-center text-center text-success">
+                                  <CheckCircle className="h-6 w-6 mb-1" />
+                                  <p className="text-xs font-medium mb-1">Won</p>
+                                  <h4 className="text-2xl font-bold">{currentTournament.won}</h4>
+                                </div>
+                                <div className="bg-destructive/10 rounded-xl p-4 border border-destructive/20 flex flex-col items-center justify-center text-center text-destructive">
+                                  <XCircle className="h-6 w-6 mb-1" />
+                                  <p className="text-xs font-medium mb-1">Lost</p>
+                                  <h4 className="text-2xl font-bold">{currentTournament.lost}</h4>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          )}
                         </>
                       );
                     })()}

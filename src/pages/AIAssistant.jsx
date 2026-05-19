@@ -154,7 +154,72 @@ const AIAssistant = () => {
         }
 
         // Parse Intent & Formulate Intelligent Response
-        if (userQuery.includes('fraud') || userQuery.includes('suspicious') || userQuery.includes('anomaly') || userQuery.includes('audit')) {
+        const isDataQuery = userQuery.includes('progress') || 
+                            userQuery.includes('trend') || 
+                            userQuery.includes('attendance') || 
+                            userQuery.includes('consistency') || 
+                            userQuery.includes('fraud') || 
+                            userQuery.includes('suspicious') || 
+                            userQuery.includes('anomaly') || 
+                            userQuery.includes('audit') || 
+                            userQuery.includes('compare') || 
+                            userQuery.includes('ranking') || 
+                            userQuery.includes('comparison') || 
+                            userQuery.includes('split') || 
+                            userQuery.includes('ratio') || 
+                            userQuery.includes('breakdown') || 
+                            userQuery.includes('absent') || 
+                            userQuery.includes('present') || 
+                            userQuery.includes('report') || 
+                            userQuery.includes('stats') || 
+                            userQuery.includes('statistics') || 
+                            userQuery.includes('motilal') || 
+                            userQuery.includes('poonam') || 
+                            userQuery.includes('bandra') || 
+                            userQuery.includes('andheri') || 
+                            userQuery.includes('centre') || 
+                            userQuery.includes('center') || 
+                            userQuery.includes('academy');
+
+        if (!isDataQuery) {
+          showGraph = false;
+          const getGeneralAIResponse = (query) => {
+            const q = query.toLowerCase();
+            if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('greetings')) {
+              return "Hello! I am your Hi5 AI Assistant. I can answer coaching questions, explain basketball drills, provide guidance on sports science, or analyze your academy's training data. What's on your mind today?";
+            }
+            if (q.includes('game') || q.includes('play') || q.includes('drill') || q.includes('practice') || q.includes('exercise')) {
+              if (q.includes('dribble') || q.includes('ball handling')) {
+                return "Here are some excellent dribbling drills for youth basketball:\n\n1. **Stationary Two-Ball Dribble**: Players bounce two basketballs simultaneously or in an alternating pattern. Focuses on hand synchronization and weaker hand development.\n2. **Cone Weave**: Setup 5-6 cones in a straight line. Players weave through them using crossovers, behind-the-back, and spin moves. \n3. **Red Light, Green Light**: Dribble fast on green, stop on red, dribble backwards on yellow. Teaches deceleration and control under pressure.";
+              }
+              if (q.includes('shoot') || q.includes('shooting')) {
+                return "For shooting improvement, try these structured exercises:\n\n1. **Form Shooting (Block Close)**: Stand 2 feet from the basket and shoot with one hand. Focus on high release, wrist snap, and perfect rotation. Do 20 makes before moving back.\n2. **Around the World**: 5 designated spots around the key. Players must hit a shot at each spot to advance. Teaches shooting under minor pressure.\n3. **Catch & Shoot Relays**: Coach passes from the wing; players curl around a screen, square their shoulders, and release. Emphasizes proper footwork (inside foot pivot).";
+              }
+              return "For training sessions, here are three highly recommended games/drills:\n\n1. **Dribble Knockout**: Players dribble inside the 3-point arc while trying to swipe and knock others' balls out. Teaches defensive scanning and shield-dribbling.\n2. **Three-Cone Shooting**: Players sprint around three cones, catch a pass, and shoot. Improves catch-and-shoot footwork and cardiovascular stamina.\n3. **Continuous 3-on-2**: Promotes fast transition defense, quick passing, and active communication. \n\nWhat age group or specific skill (e.g. shooting, defense, passing) are you planning this for?";
+            }
+            if (q.includes('coach') || q.includes('motivation') || q.includes('motivate') || q.includes('discipline') || q.includes('attitude')) {
+              return "Coaching youth sports effectively involves key psychological strategies:\n\n1. **The Praise Sandwich**: Correct errors by placing them between positive feedback. (e.g., 'Great effort on defense, next time try keeping your knees bent, but excellent hustle!')\n2. **Effort over Outcome**: Reward attitude, teamwork, and defensive hustle over points scored. This builds long-term resilience.\n3. **Micro-Goals**: Give distracted players clear, short-term challenges (e.g., 'Get 3 passes in this possession' or 'Sprint back immediately on defense').";
+            }
+            if (q.includes('rule') || q.includes('foul') || q.includes('violation') || q.includes('travel') || q.includes('double')) {
+              return "In basketball, here are the standard FIBA/NBA rules & violations:\n\n1. **Traveling**: Taking more than two steps without dribbling the ball, or moving the pivot foot once established.\n2. **Double Dribble**: Dribbling, stopping and catching the ball, and then dribbling again; or dribbling with both hands at once.\n3. **Personal Foul**: Illegal physical contact (pushing, holding, reaching-in, blocking) that impedes an opponent's path.\n4. **3-Second Violation**: An offensive player staying inside the key (restricted area) for more than three consecutive seconds.";
+            }
+            if (q.includes('defense') || q.includes('defensive') || q.includes('guard')) {
+              return "To improve team defense, emphasize these core fundamentals:\n\n1. **Defensive Stance**: Low center of gravity, feet wider than shoulders, hands active, weight on the balls of the feet.\n2. **Stay Between**: Keep your body between the offensive player and the basket at all times (cutting off the drive).\n3. **Help Side Defense**: Players away from the ball should drop towards the key to help teammate drives and cover passing lanes.\n4. **Box Out**: Immediately locate your opponent when a shot goes up, make contact, and seal them out to secure the rebound.";
+            }
+            if (q.includes('thank') || q.includes('thanks') || q.includes('great') || q.includes('awesome')) {
+              return "You're welcome! Keep inspiring the athletes. Let me know if you need more drills, tactics, or details on center attendance.";
+            }
+            return `That's a great question! For a sports program like Hi5:
+            
+- If you're asking about **training techniques**, focusing on repetitive skill building (ball-handling, layup form, defensive stance) is key for early-stage development.
+- If you're looking for **motivational tips**, setting daily micro-goals encourages continuous engagement.
+- If you have any **specific questions about a rule, play (like Pick & Roll), or drill**, let me know and I can break it down in detail!`;
+          };
+          aiResponse = getGeneralAIResponse(userQuery);
+          metrics = null;
+          title = "";
+        }
+        else if (userQuery.includes('fraud') || userQuery.includes('suspicious') || userQuery.includes('anomaly') || userQuery.includes('audit')) {
           aiResponse = "⚠️ NEURAL SECURITY ENGINE: Geofence violation detected. In the past 24 hours, Coach Kevin submitted an attendance sheet for the Motilal Centre, but spatial analysis reveals the GPS device coordinates were actually 15.4km away from the designated geofence threshold. This constitutes a severe anomaly. Action recommended: Review and audit Coach Kevin's submissions for Motilal immediately.";
           title = "GPS Coordinates Spatial Deviation";
           graphType = 'fraud';
