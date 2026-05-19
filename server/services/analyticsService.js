@@ -7,16 +7,21 @@ class AnalyticsService {
     const coachHours = {};
     
     for (const s of sessions) {
-      if (!coachHours[s.coach]) {
-        coachHours[s.coach] = { totalHours: 0, sessionsCount: 0, centres: new Set() };
+      const coachVal = s.coachName || s.coach;
+      const centerVal = s.centerName || s.centre;
+      if (!coachVal) continue;
+
+      if (!coachHours[coachVal]) {
+        coachHours[coachVal] = { totalHours: 0, sessionsCount: 0, centres: new Set() };
       }
-      coachHours[s.coach].totalHours += parseFloat(s.hours || 0);
-      coachHours[s.coach].sessionsCount += 1;
-      if (s.centre) coachHours[s.coach].centres.add(s.centre);
+      coachHours[coachVal].totalHours += parseFloat(s.hours || 0);
+      coachHours[coachVal].sessionsCount += 1;
+      if (centerVal) coachHours[coachVal].centres.add(centerVal);
     }
 
     return Object.entries(coachHours).map(([coachName, stats]) => ({
       coach: coachName,
+      coachName: coachName,
       totalHours: parseFloat(stats.totalHours.toFixed(1)),
       sessionsCount: stats.sessionsCount,
       centres: Array.from(stats.centres)
@@ -29,15 +34,22 @@ class AnalyticsService {
    */
   generateStudentSummary(students = []) {
     const consistencyList = students.map(s => {
+      const nameVal = s.studentName || s.name;
+      const centerVal = s.centerName || s.centre;
+      const rateVal = s.attendanceRate !== undefined ? s.attendanceRate : (s.attendancePercentage !== undefined ? s.attendancePercentage / 100 : 0.8);
+      
       let consistency = 'Consistent';
-      if (s.attendanceRate < 0.7) consistency = 'Critical (Below 70%)';
-      else if (s.attendanceRate < 0.85) consistency = 'Irregular';
+      if (rateVal < 0.7) consistency = 'Critical (Below 70%)';
+      else if (rateVal < 0.85) consistency = 'Irregular';
 
       return {
-        name: s.name,
-        centre: s.centre,
-        school: s.school,
-        attendanceRate: Math.round(s.attendanceRate * 100),
+        name: nameVal,
+        studentName: nameVal,
+        centre: centerVal,
+        centerName: centerVal,
+        school: s.school || 'N/A',
+        attendanceRate: Math.round(rateVal * 100),
+        attendancePercentage: Math.round(rateVal * 100),
         status: consistency
       };
     });
@@ -45,8 +57,13 @@ class AnalyticsService {
     // Sort by lowest attendance first to highlight students at risk
     consistencyList.sort((a, b) => a.attendanceRate - b.attendanceRate);
 
+    const overallRate = students.reduce((acc, s) => {
+      const rateVal = s.attendanceRate !== undefined ? s.attendanceRate : (s.attendancePercentage !== undefined ? s.attendancePercentage / 100 : 0.8);
+      return acc + rateVal;
+    }, 0) / (students.length || 1);
+
     return {
-      averageSystemAttendance: Math.round(students.reduce((acc, s) => acc + (s.attendanceRate || 0), 0) / (students.length || 1) * 100),
+      averageSystemAttendance: Math.round(overallRate * 100),
       totalStudentsCount: students.length,
       studentConsistency: consistencyList
     };
@@ -59,10 +76,12 @@ class AnalyticsService {
    */
   generateCenterPerformance(analytics = [], sessions = []) {
     const performances = analytics.map(a => {
+      const centerVal = a.centerName || a.centre;
       // Calculate active sessions count from database for this center
-      const centerSessions = sessions.filter(s => s.centre === a.centre);
+      const centerSessions = sessions.filter(s => (s.centerName || s.centre) === centerVal);
       return {
-        centre: a.centre,
+        centre: centerVal,
+        centerName: centerVal,
         averageAttendance: a.avgAttendance,
         enrolledStudents: a.enrolledStudents,
         totalSessions: centerSessions.length,
@@ -93,7 +112,8 @@ class AnalyticsService {
       if (s.date) {
         const dayName = new Date(s.date).toLocaleDateString('en-US', { weekday: 'long' });
         if (weekdayAttendance[dayName]) {
-          weekdayAttendance[dayName].total += parseFloat(s.attendanceRate || 0.85);
+          const rateVal = s.attendanceRate !== undefined ? s.attendanceRate : (s.attendancePercentage !== undefined ? s.attendancePercentage / 100 : 0.8);
+          weekdayAttendance[dayName].total += parseFloat(rateVal);
           weekdayAttendance[dayName].count += 1;
         }
       }

@@ -10,11 +10,17 @@ class FraudService {
 
     // 1. Scan geofence logs for mock location or distance violations
     for (const log of geofenceLogs) {
+      const coachVal = log.coachName || log.coach;
+      const centerVal = log.centerName || log.location || log.centre;
+      if (!coachVal) continue;
+
       if (log.issue && log.issue.toLowerCase().includes('mock location')) {
         anomalies.push({
           type: 'Fake GPS App',
-          coach: log.coach,
-          location: log.location,
+          coach: coachVal,
+          coachName: coachVal,
+          location: centerVal,
+          centerName: centerVal,
           details: `Detected active mock location/spoofing application on device ${log.deviceId || 'unknown'}.`,
           severity: 'high',
           timestamp: log.timestamp
@@ -25,8 +31,10 @@ class FraudService {
       if (log.issue && log.issue.toLowerCase().includes('outside radius')) {
         anomalies.push({
           type: 'Geofence Violation',
-          coach: log.coach,
-          location: log.location,
+          coach: coachVal,
+          coachName: coachVal,
+          location: centerVal,
+          centerName: centerVal,
           details: `Attendance marked significantly outside the allowed zone perimeter.`,
           severity: 'high',
           timestamp: log.timestamp
@@ -37,8 +45,10 @@ class FraudService {
       if (log.issue && log.issue.toLowerCase().includes('matches 3 other')) {
         anomalies.push({
           type: 'Duplicate Device Identity',
-          coach: log.coach,
-          location: log.location,
+          coach: coachVal,
+          coachName: coachVal,
+          location: centerVal,
+          centerName: centerVal,
           details: `Multiple coaches sharing device profile fingerprint / MAC addresses.`,
           severity: 'medium',
           timestamp: log.timestamp
@@ -51,10 +61,13 @@ class FraudService {
     // e.g. same coach doing s1 and s2 on the same day with overlapping times or too fast travel
     const coachSessions = {};
     for (const session of sessions) {
-      if (!coachSessions[session.coach]) {
-        coachSessions[session.coach] = [];
+      const coachVal = session.coachName || session.coach;
+      if (!coachVal) continue;
+
+      if (!coachSessions[coachVal]) {
+        coachSessions[coachVal] = [];
       }
-      coachSessions[session.coach].push(session);
+      coachSessions[coachVal].push(session);
     }
 
     for (const [coach, list] of Object.entries(coachSessions)) {
@@ -64,15 +77,19 @@ class FraudService {
       for (let i = 0; i < list.length - 1; i++) {
         const s1 = list[i];
         const s2 = list[i + 1];
+        const s1Center = s1.centerName || s1.centre;
+        const s2Center = s2.centerName || s2.centre;
         
-        if (s1.date === s2.date && s1.centre !== s2.centre) {
+        if (s1.date === s2.date && s1Center !== s2Center) {
           // Same day, different centers. If time was tracked, check speed.
           // Since we track morning/evening sessions:
           if (s1.type === s2.type) {
             anomalies.push({
               type: 'Overlapping Session Timing',
               coach: coach,
-              location: `${s1.centre} & ${s2.centre}`,
+              coachName: coach,
+              location: `${s1Center} & ${s2Center}`,
+              centerName: `${s1Center} & ${s2Center}`,
               details: `Coach registered simultaneous ${s1.type} sessions at two separate centers.`,
               severity: 'critical',
               timestamp: s1.date
