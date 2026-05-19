@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { Sun, Moon, Bell, User, LogOut, Settings, CreditCard, ChevronDown } from 'lucide-react';
 import { Button } from '../ui/Button';
@@ -8,6 +8,9 @@ const Topbar = () => {
   const { theme, toggleTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  
+  const notificationsRef = useRef(null);
+  const profileRef = useRef(null);
 
   const userRole = localStorage.getItem('userRole') || 'coach';
   const userEmail = localStorage.getItem('userEmail') || 'coach@hi5.org';
@@ -17,6 +20,21 @@ const Topbar = () => {
     window.location.reload(); // Refresh to update all components relying on role
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfile(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-border/50 bg-background/80 px-6 backdrop-blur-xl">
       <div className="flex items-center gap-4">
@@ -25,7 +43,7 @@ const Topbar = () => {
 
       <div className="flex items-center gap-3">
         {/* Notifications */}
-        <div className="relative">
+        <div className="relative" ref={notificationsRef}>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -76,7 +94,7 @@ const Topbar = () => {
         </Button>
 
         {/* Profile Menu */}
-        <div className="relative">
+        <div className="relative" ref={profileRef}>
           <div 
             onClick={() => setShowProfile(!showProfile)}
             className="flex items-center gap-2 p-1 rounded-full hover:bg-muted/50 transition-all cursor-pointer group"
