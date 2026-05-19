@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import DashboardLayout from './components/layout/DashboardLayout';
 import AuthLayout from './components/layout/AuthLayout';
 import Login from './pages/Login';
@@ -7,6 +7,7 @@ import CoachDashboard from './pages/CoachDashboard';
 import Attendance from './pages/Attendance';
 import FraudDetection from './pages/FraudDetection';
 import Insights from './pages/Insights';
+import AIAssistant from './pages/AIAssistant';
 
 function App() {
   return (
@@ -22,11 +23,12 @@ function App() {
 
         {/* Dashboard Routes */}
         <Route path="/dashboard" element={<DashboardLayout />}>
-          {/* Default redirect for dashboard */}
-          <Route index element={<Navigate to="/dashboard/coach" replace />} />
+          {/* Default redirect for dashboard based on role */}
+          <Route index element={<RoleRedirect />} />
           {/* Coach routes */}
           <Route path="coach" element={<CoachDashboard />} />
           <Route path="attendance" element={<Attendance />} />
+          <Route path="ai" element={<AIAssistant />} />
           <Route path="fraud" element={<FraudDetection />} />
           <Route path="insights" element={<Insights />} />
           {/* Admin routes */}
@@ -37,6 +39,11 @@ function App() {
       </Routes>
     </Router>
   );
+}
+
+function RoleRedirect() {
+  const userRole = localStorage.getItem('userRole') || 'coach';
+  return <Navigate to={userRole === 'admin' ? "/dashboard/coach" : "/dashboard/attendance"} replace />;
 }
 
 export default App;

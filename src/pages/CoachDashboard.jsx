@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Users, Clock, CalendarCheck, TrendingUp, AlertTriangle, ChevronDown, Building, BarChart3, Trophy } from 'lucide-react';
+import { Users, Clock, CalendarCheck, TrendingUp, AlertTriangle, ChevronDown, Building, BarChart3, Trophy, Sparkles, Activity, ShieldCheck, Zap } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 import { cn } from '../utils/utils';
 import { useDashboardData } from '../hooks/useDashboardData';
@@ -53,6 +55,16 @@ const dashboardData = {
 };
 
 const CoachDashboard = () => {
+  const navigate = useNavigate();
+  const userRole = localStorage.getItem('userRole') || 'coach';
+
+  // Security: Redirect coaches away from the Analytics dashboard
+  useEffect(() => {
+    if (userRole === 'coach') {
+      navigate('/dashboard/attendance');
+    }
+  }, [userRole, navigate]);
+
   const { stats } = useDashboardData();
   const [selectedCentre, setSelectedCentre] = useState("Overall Academy");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -68,10 +80,10 @@ const CoachDashboard = () => {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-3xl font-bold tracking-tight">Hi5 Analytics</h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight italic">Hi5 Intelligence</h1>
             <div className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary uppercase tracking-wider">Live</div>
           </div>
-          <p className="text-muted-foreground text-sm">Monitoring performance across {selectedCentre === "Overall Academy" ? "all centres" : selectedCentre}.</p>
+          <p className="text-muted-foreground text-xs md:text-sm">Monitoring performance across {selectedCentre === "Overall Academy" ? "all centres" : selectedCentre}.</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -114,6 +126,72 @@ const CoachDashboard = () => {
             System Online
           </div>
         </div>
+      </div>
+
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3 mb-6">
+        <Card className="md:col-span-2 glass bg-primary/5 border-primary/20 overflow-hidden relative group">
+           <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Sparkles className="h-24 w-24 text-primary" />
+           </div>
+           <CardContent className="p-6 relative z-10">
+              <div className="flex items-center gap-2 mb-4">
+                 <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+                    <Zap className="h-4 w-4 text-primary-foreground" />
+                 </div>
+                 <div>
+                    <h3 className="text-sm font-bold uppercase tracking-tighter italic">Hi5 Neural Engine</h3>
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Hi5 Foundation RAG Pipeline</p>
+                 </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                 <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                       <span className="text-xs text-muted-foreground">Predicted Attendance (Next 24h)</span>
+                       <span className="text-xs font-black text-primary">89.2%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                       <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: '89.2%' }}
+                          transition={{ duration: 1, delay: 0.5 }}
+                          className="h-full bg-primary"
+                       />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground italic">"Based on historical Friday patterns and current weather data."</p>
+                 </div>
+                 <div className="flex items-center gap-4 p-3 bg-background/50 rounded-2xl border border-border/50">
+                    <div className="h-10 w-10 rounded-xl bg-success/10 flex items-center justify-center">
+                       <TrendingUp className="h-5 w-5 text-success" />
+                    </div>
+                    <div>
+                       <p className="text-xs font-bold text-success">+4.2% Consistency</p>
+                       <p className="text-[10px] text-muted-foreground">AI-predicted growth trend</p>
+                    </div>
+                 </div>
+              </div>
+           </CardContent>
+        </Card>
+
+        <Card className="glass border-destructive/20 bg-destructive/5 group overflow-hidden">
+           <CardContent className="p-6 flex flex-col justify-between h-full relative">
+              <div className="absolute -bottom-4 -right-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                 <ShieldCheck className="h-24 w-24 text-destructive" />
+              </div>
+              <div>
+                 <div className="flex items-center gap-2 mb-4">
+                    <Activity className="h-4 w-4 text-destructive animate-pulse" />
+                    <h3 className="text-sm font-bold uppercase tracking-tighter">Fraud Risk Score</h3>
+                 </div>
+                 <div className="text-4xl font-black text-destructive tracking-tighter mb-1">0.02</div>
+                 <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Ultra-Low Risk Detected</p>
+              </div>
+              <div className="mt-4 pt-4 border-t border-destructive/10">
+                 <p className="text-[10px] leading-relaxed text-destructive/70 italic font-medium">
+                    "Geofencing integrity remains 99.8% across all centers."
+                 </p>
+              </div>
+           </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">

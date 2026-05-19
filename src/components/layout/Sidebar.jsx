@@ -1,15 +1,16 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Calendar, BarChart3, ShieldAlert, Trophy, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, BarChart3, ShieldAlert, Trophy, Settings, LogOut, Sparkles } from 'lucide-react';
 import { cn } from '../../utils/utils';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Analytics', href: '/dashboard/coach', roles: ['admin'] },
   { icon: Calendar, label: 'Attendance', href: '/dashboard/attendance', roles: ['admin', 'coach'] },
   { icon: BarChart3, label: 'Insights', href: '/dashboard/insights', roles: ['admin'] },
+  { icon: Sparkles, label: 'AI Assistant', href: '/dashboard/ai', roles: ['admin', 'coach'] },
   { icon: ShieldAlert, label: 'Fraud Detection', href: '/dashboard/fraud', roles: ['admin'] },
   { icon: Trophy, label: 'Tournaments', href: '/dashboard/tournaments', roles: ['admin'] },
-  { icon: Settings, label: 'Settings', href: '/dashboard/settings', roles: ['admin', 'coach'] },
+  { icon: Settings, label: 'Settings', href: '/dashboard/settings', roles: ['admin'] },
 ];
 
 const Sidebar = () => {

@@ -1,10 +1,11 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Calendar, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, ShieldAlert, Sparkles } from 'lucide-react';
 import { cn } from '../../utils/utils';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Home', href: '/dashboard/coach', roles: ['admin'] },
+  { icon: Sparkles, label: 'AI', href: '/dashboard/ai', roles: ['admin', 'coach'] },
   { icon: Calendar, label: 'Attendance', href: '/dashboard/attendance', roles: ['admin', 'coach'] },
   { icon: ShieldAlert, label: 'Alerts', href: '/dashboard/fraud', roles: ['admin'] },
 ];

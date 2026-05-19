@@ -10,14 +10,31 @@ const Login = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const handleLogin = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
+    
+    // Hardcoded credentials for Hi5 Foundation
+    const credentials = {
+      "coach@hi5.org": { password: "coach", role: "coach", path: "/dashboard/coach" },
+      "admin@hi5.org": { password: "admin", role: "admin", path: "/dashboard/coach" }
+    };
+
     setTimeout(() => {
       setIsLoading(false);
-      navigate('/dashboard/coach');
-    }, 1500);
+      const user = credentials[email];
+
+      if (user && user.password === password) {
+        localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userEmail', email);
+        navigate(user.path);
+      } else {
+        alert("Invalid credentials. Try: coach@hi5.org / coach");
+      }
+    }, 1200);
   };
 
   return (
@@ -25,17 +42,8 @@ const Login = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-md mx-auto"
+      className="w-full max-w-md mx-auto py-8"
     >
-      <div className="flex flex-col items-center gap-4 mb-8">
-        <div className="h-16 w-16 bg-primary/10 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 font-black text-2xl text-primary tracking-tighter">
-          H5
-        </div>
-        <div className="text-center">
-          <h1 className="text-4xl font-black tracking-tighter text-foreground mb-1 uppercase">Hi5 Foundation</h1>
-          <p className="text-muted-foreground font-medium text-sm">Professional Sports Excellence Platform</p>
-        </div>
-      </div>
       
       <Card className="glass border-border/50 shadow-2xl">
         <CardHeader className="space-y-1 pb-6 text-center">
@@ -56,6 +64,8 @@ const Login = () => {
                   <Input 
                     placeholder="coach@hi5.org" 
                     type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary"
                     required
                   />
@@ -75,6 +85,8 @@ const Login = () => {
                   <Input 
                     placeholder="••••••••" 
                     type="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 h-12 bg-background/50 border-border/50 focus:border-primary"
                     required
                   />

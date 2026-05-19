@@ -22,19 +22,7 @@ const AuthLayout = () => {
         </Button>
       </div>
 
-      <div className="w-full max-w-md z-10 flex flex-col items-center">
-        <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/30 text-2xl font-bold">
-            H5
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground text-center">
-            Hi5 Platform
-          </h1>
-          <p className="text-sm text-muted-foreground text-center">
-            AI-powered sports attendance
-          </p>
-        </div>
-        
+      <div className="w-full max-w-md z-10">
         <div className="w-full">
           <Outlet />
         </div>

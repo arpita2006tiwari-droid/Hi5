@@ -9,10 +9,18 @@ const Topbar = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
+  const userRole = localStorage.getItem('userRole') || 'coach';
+  const userEmail = localStorage.getItem('userEmail') || 'coach@hi5.org';
+
+  const toggleRole = (newRole) => {
+    localStorage.setItem('userRole', newRole);
+    window.location.reload(); // Refresh to update all components relying on role
+  };
+
   return (
     <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-border/50 bg-background/80 px-6 backdrop-blur-xl">
       <div className="flex items-center gap-4">
-        <h2 className="text-xl font-black tracking-tighter text-primary md:hidden">Hi5 FOUNDATION</h2>
+        <h2 className="text-xl font-black tracking-tighter text-primary md:hidden italic">Hi5 AI</h2>
       </div>
 
       <div className="flex items-center gap-3">
@@ -73,32 +81,54 @@ const Topbar = () => {
             onClick={() => setShowProfile(!showProfile)}
             className="flex items-center gap-2 p-1 rounded-full hover:bg-muted/50 transition-all cursor-pointer group"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary shadow-inner transition-transform group-hover:scale-105">
-              <User className="h-4 w-4" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary shadow-inner transition-transform group-hover:scale-105 font-bold text-xs">
+              {userRole === 'admin' ? 'A' : 'C'}
             </div>
             <ChevronDown className={cn("h-3 w-3 text-muted-foreground transition-transform", showProfile && "rotate-180")} />
           </div>
 
           {showProfile && (
-            <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-border bg-card p-1 shadow-2xl animate-in slide-in-from-top-2 duration-200">
+            <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-border bg-card p-1 shadow-2xl animate-in slide-in-from-top-2 duration-200">
               <div className="p-3 border-b border-border mb-1">
-                <p className="text-xs font-black uppercase tracking-widest text-primary">Admin Pro</p>
-                <p className="text-sm font-bold truncate">arpita@sportify.io</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-0.5">
+                  Hi5 {userRole === 'admin' ? 'Foundation Admin' : 'Coach'}
+                </p>
+                <p className="text-sm font-bold truncate">{userEmail}</p>
               </div>
-              <div className="space-y-0.5">
-                {[
-                  { icon: User, label: "My Profile" },
-                  { icon: Settings, label: "App Settings" },
-                  { icon: CreditCard, label: "Billing" }
-                ].map((item, i) => (
-                  <button key={i} className="flex w-full items-center gap-3 px-3 py-2 text-xs font-medium rounded-xl hover:bg-muted/50 transition-colors">
-                    <item.icon className="h-4 w-4 text-muted-foreground" />
-                    {item.label}
-                  </button>
-                ))}
+              
+              {/* Role Switcher */}
+              <div className="p-2 space-y-1">
+                <p className="text-[9px] font-bold text-muted-foreground uppercase px-2 mb-1">Access Roles</p>
+                <button 
+                  onClick={() => toggleRole('admin')}
+                  className={cn(
+                    "flex w-full items-center justify-between px-3 py-2 text-xs font-medium rounded-xl transition-all",
+                    userRole === 'admin' ? "bg-primary/10 text-primary font-bold" : "hover:bg-muted text-muted-foreground"
+                  )}
+                >
+                  Administrator View
+                  {userRole === 'admin' && <div className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                </button>
+                <button 
+                  onClick={() => toggleRole('coach')}
+                  className={cn(
+                    "flex w-full items-center justify-between px-3 py-2 text-xs font-medium rounded-xl transition-all",
+                    userRole === 'coach' ? "bg-primary/10 text-primary font-bold" : "hover:bg-muted text-muted-foreground"
+                  )}
+                >
+                  Coaching View
+                  {userRole === 'coach' && <div className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                </button>
               </div>
+
               <div className="p-1 mt-1 border-t border-border">
-                <button className="flex w-full items-center gap-3 px-3 py-2 text-xs font-bold text-destructive rounded-xl hover:bg-destructive/10 transition-colors">
+                <button 
+                  onClick={() => {
+                    localStorage.clear();
+                    window.location.href = '/Hi5/#/login';
+                  }}
+                  className="flex w-full items-center gap-3 px-3 py-2 text-xs font-bold text-destructive rounded-xl hover:bg-destructive/10 transition-colors"
+                >
                   <LogOut className="h-4 w-4" />
                   Logout Session
                 </button>
